@@ -31,12 +31,15 @@
 #define RVIZ_PLUGIN_TUTORIALS__IMU_DISPLAY_H
 
 #include "rviz_common/message_filter_display.hpp"
+#include "rviz_common/properties/color_property.hpp"
+#include "rviz_common/properties/float_property.hpp"
 #include "sensor_msgs/msg/imu.hpp"
 
 // All the source in this plugin is in its own namespace.  This is not
 // required but is good practice.
 namespace rviz_plugin_tutorials
 {
+class ImuVisual;
 
 // BEGIN_TUTORIAL
 // Here we declare our new subclass of rviz::Display.  Every display

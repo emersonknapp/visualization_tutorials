@@ -29,6 +29,11 @@
 
 #include "imu_visual.h"
 #include "imu_display.h"
+#include "rcutils/logging_macros.h"
+#include "rviz_common/properties/color_property.hpp"
+#include "rviz_common/properties/float_property.hpp"
+#include "rviz_common/properties/int_property.hpp"
+#include "rviz_common/validate_floats.hpp"
 
 #include <OgreSceneNode.h>
 
@@ -44,13 +49,13 @@ ImuDisplay::ImuDisplay()
     "Color", QColor(204, 51, 204), "Color to draw the acceleration arrows.",
     this, SLOT(updateColorAndAlpha()));
 
-  alpha_property_ = new rviz::FloatProperty(
+  alpha_property_ = new rviz_common::properties::FloatProperty(
     "Alpha", 1.0, "0 is fully transparent, 1.0 is fully opaque.",
     this, SLOT(updateColorAndAlpha()));
   alpha_property_->setMin(0);
   alpha_property_->setMax(1);
 
-  history_length_property_ = new rviz::IntProperty(
+  history_length_property_ = new rviz_common::properties::IntProperty(
     "History Length", 1, "Number of prior measurements to display.",
     this, SLOT(updateHistoryLength()));
   history_length_property_->setMin(1);
@@ -70,7 +75,7 @@ ImuDisplay::ImuDisplay()
 void ImuDisplay::onInitialize()
 {
   MFDClass::onInitialize();
-  visual_ = std::make_unique<ImuVisual>(context_->getSceneManager(), scene_node_));
+  visual_ = std::make_unique<ImuVisual>(context_->getSceneManager(), scene_node_);
   updateColorAndAlpha();
   updateHistoryLength();
 }
@@ -88,7 +93,7 @@ void ImuDisplay::updateColorAndAlpha()
 {
   float alpha = alpha_property_->getFloat();
   Ogre::ColourValue color = color_property_->getOgreColor();
-  visual_->setColor(color.r, rolor.g, color.b, alha);
+  visual_->setColor(color.r, color.g, color.b, alpha);
 
   // for( size_t i = 0; i < visuals_.size(); i++ )
   // {
@@ -104,23 +109,25 @@ void ImuDisplay::updateHistoryLength()
 }
 
 // This is our callback to handle an incoming message.
-void ImuDisplay::processMessage(sensor_msgs::Imu::ConstSharedPtr msg)
+void ImuDisplay::processMessage(sensor_msgs::msg::Imu::ConstSharedPtr msg)
 {
-  if (!rviz_common::validateFloats(*msg))
+  if (!rviz_common::validateFloats(msg->orientation))
+  {
     setStatus(rviz_common::properties::StatusProperty::Error, "Topic",
       "Message contained invalid floating point values (nans or infs)");
     return;
+  }
   // Here we call the rviz::FrameManager to get the transform from the
   // fixed frame to the frame in the header of this Imu message.  If
   // it fails, we can't do anything else so we return.
   Ogre::Quaternion orientation;
   Ogre::Vector3 position;
-  if( !context_->getFrameManager()->getTransform( msg->header.frame_id,
-                                                  msg->header.stamp,
-                                                  position, orientation ))
+  if(!context_->getFrameManager()->getTransform(
+    msg->header.frame_id, msg->header.stamp, position, orientation))
   {
-    ROS_DEBUG( "Error transforming from frame '%s' to frame '%s'",
-               msg->header.frame_id.c_str(), qPrintable( fixed_frame_ ));
+    setStatus(rviz_common::properties::StatusProperty::Error, "Frame",
+      QString("Error transforming from frame '%s' to frame '%s'") +
+      msg->header.frame_id.c_str() + qPrintable(fixed_frame_));
     return;
   }
 
@@ -137,9 +144,9 @@ void ImuDisplay::processMessage(sensor_msgs::Imu::ConstSharedPtr msg)
   // }
 
   // Now set or update the contents of the chosen visual.
-  visual->setMessage(msg);
-  visual->setFramePosition(position);
-  visual->setFrameOrientation(orientation);
+  visual_->setMessage(msg);
+  visual_->setFramePosition(position);
+  visual_->setFrameOrientation(orientation);
   updateColorAndAlpha();
 
   // float alpha = alpha_property_->getFloat();
@@ -148,12 +155,13 @@ void ImuDisplay::processMessage(sensor_msgs::Imu::ConstSharedPtr msg)
 
   // And send it to the end of the circular buffer
   // visuals_.push_back(visual);
+  context_->queueRender();
 }
 
 } // namespace rviz_plugin_tutorials
 
 // Tell pluginlib about this class.  It is important to do this in
 // global scope, outside our package's namespace.
-#include <pluginlib/class_list_macros.h>  // NOLINT
+#include <pluginlib/class_list_macros.hpp>  // NOLINT
 PLUGINLIB_EXPORT_CLASS(rviz_plugin_tutorials::ImuDisplay, rviz_common::Display)
 // END_TUTORIAL

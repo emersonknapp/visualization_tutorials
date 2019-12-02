@@ -13,7 +13,7 @@ endif()
 
 # Be as strict as possible
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+  # add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
 add_definitions(-D_BUILD_DIR_PATH="${CMAKE_CURRENT_BINARY_DIR}")
@@ -103,10 +103,10 @@ install(
   INCLUDES DESTINATION include
 )
 
-install(
-  DIRECTORY include/
-  DESTINATION include
-)
+# install(
+#   DIRECTORY include/
+#   DESTINATION include
+# )
 
 install(
   DIRECTORY "${CMAKE_SOURCE_DIR}/icons"
