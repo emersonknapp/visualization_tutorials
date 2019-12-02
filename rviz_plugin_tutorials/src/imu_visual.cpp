@@ -35,7 +35,7 @@
 #include "rviz_rendering/objects/arrow.hpp"
 #include "geometry_msgs/msg/vector3.hpp"
 
-#include "imu_visual.h"
+#include "imu_visual.hpp"
 
 namespace rviz_plugin_tutorials
 {
@@ -95,6 +95,11 @@ void ImuVisual::setFramePosition(const Ogre::Vector3& position)
 void ImuVisual::setFrameOrientation(const Ogre::Quaternion& orientation)
 {
   frame_node_->setOrientation( orientation );
+}
+
+void ImuVisual::setScale(float scale)
+{
+  frame_node_->setScale(Ogre::Vector3(scale, scale, scale));
 }
 
 // Color is passed through to the Arrow object.

@@ -75,6 +75,7 @@ public:
   // responsible for visualization.
   void setFramePosition(const Ogre::Vector3& position);
   void setFrameOrientation(const Ogre::Quaternion& orientation);
+  void setScale(float scale);
 
   // Set the color and alpha of the visual, which are user-editable
   // parameters and therefore don't come from the Imu message.

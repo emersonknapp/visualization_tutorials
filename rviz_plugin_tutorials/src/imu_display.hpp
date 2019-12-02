@@ -50,8 +50,7 @@ class ImuVisual;
 // of the IMU acceleration vector.  The base of the arrow will be at
 // the frame listed in the header of the Imu message, and the
 // direction of the arrow will be relative to the orientation of that
-// frame.  It will also optionally show a history of recent
-// acceleration vectors, which will be stored in a circular buffer.
+// frame.
 //
 // The ImuDisplay class itself just implements the circular buffer,
 // editable parameters, and Display subclass machinery.  The visuals
@@ -81,7 +80,7 @@ protected:
   // These Qt slots get connected to signals indicating changes in the user-editable properties.
 private Q_SLOTS:
   void updateColorAndAlpha();
-  void updateHistoryLength();
+  void updateScale();
 
   // Function to handle an incoming ROS message.
 private:
@@ -89,14 +88,10 @@ private:
 
   std::unique_ptr<ImuVisual> visual_;
 
-  // Storage for the list of visuals.  It is a circular buffer where
-  // data gets popped from the front (oldest) and pushed to the back (newest)
-  // boost::circular_buffer<boost::shared_ptr<ImuVisual> > visuals_;
-
   // User-editable property variables.
-  rviz_common::properties::ColorProperty* color_property_;
-  rviz_common::properties::FloatProperty* alpha_property_;
-  rviz_common::properties::IntProperty* history_length_property_;
+  rviz_common::properties::ColorProperty * color_property_;
+  rviz_common::properties::FloatProperty * alpha_property_;
+  rviz_common::properties::FloatProperty * scale_property_;
 };
 // END_TUTORIAL
 

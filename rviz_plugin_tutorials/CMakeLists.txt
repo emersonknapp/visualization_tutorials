@@ -36,7 +36,7 @@ find_package(sensor_msgs REQUIRED)
 ## Here we specify the list of source files.
 ## The generated MOC files are included automatically as headers.
 set(${PROJECT_NAME}_headers_to_moc
-  src/imu_display.h
+  src/imu_display.hpp
 )
 
 set(${PROJECT_NAME}_sources

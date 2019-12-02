@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "imu_visual.h"
-#include "imu_display.h"
+#include "imu_visual.hpp"
+#include "imu_display.hpp"
 #include "rcutils/logging_macros.h"
 #include "rviz_common/properties/color_property.hpp"
 #include "rviz_common/properties/float_property.hpp"
@@ -55,11 +55,11 @@ ImuDisplay::ImuDisplay()
   alpha_property_->setMin(0);
   alpha_property_->setMax(1);
 
-  history_length_property_ = new rviz_common::properties::IntProperty(
-    "History Length", 1, "Number of prior measurements to display.",
-    this, SLOT(updateHistoryLength()));
-  history_length_property_->setMin(1);
-  history_length_property_->setMax(100000);
+  scale_property_ = new rviz_common::properties::FloatProperty(
+    "Scale", 1.0, "How big the arrow should be",
+    this, SLOT(updateScale()));
+  scale_property_->setMin(0);
+  scale_property_->setMax(100);
 }
 
 // After the top-level rviz::Display::initialize() does its own setup,
@@ -77,12 +77,11 @@ void ImuDisplay::onInitialize()
   MFDClass::onInitialize();
   visual_ = std::make_unique<ImuVisual>(context_->getSceneManager(), scene_node_);
   updateColorAndAlpha();
-  updateHistoryLength();
+  updateScale();
 }
 
 ImuDisplay::~ImuDisplay() = default;
 
-// Clear the visuals by deleting their objects.
 void ImuDisplay::reset()
 {
   MFDClass::reset();
@@ -94,18 +93,14 @@ void ImuDisplay::updateColorAndAlpha()
   float alpha = alpha_property_->getFloat();
   Ogre::ColourValue color = color_property_->getOgreColor();
   visual_->setColor(color.r, color.g, color.b, alpha);
-
-  // for( size_t i = 0; i < visuals_.size(); i++ )
-  // {
-  //   visuals_[ i ]->setColor( color.r, color.g, color.b, alpha );
-  // }
   context_->queueRender();
 }
 
-// Set the number of past visuals to show.
-void ImuDisplay::updateHistoryLength()
+void ImuDisplay::updateScale()
 {
-  // visuals_.rset_capacity(history_length_property_->getInt());
+  float scale = scale_property_->getFloat();
+  visual_->setScale(scale);
+  context_->queueRender();
 }
 
 // This is our callback to handle an incoming message.
@@ -131,18 +126,6 @@ void ImuDisplay::processMessage(sensor_msgs::msg::Imu::ConstSharedPtr msg)
     return;
   }
 
-  // We are keeping a circular buffer of visual pointers.  This gets
-  // the next one, or creates and stores it if the buffer is not full
-  // boost::shared_ptr<ImuVisual> visual;
-  // if( visuals_.full() )
-  // {
-  //   visual = visuals_.front();
-  // }
-  // else
-  // {
-  //   visual.reset(new ImuVisual( context_->getSceneManager(), scene_node_ ));
-  // }
-
   // Now set or update the contents of the chosen visual.
   visual_->setMessage(msg);
   visual_->setFramePosition(position);
@@ -154,7 +137,6 @@ void ImuDisplay::processMessage(sensor_msgs::msg::Imu::ConstSharedPtr msg)
   // visual->setColor( color.r, color.g, color.b, alpha );
 
   // And send it to the end of the circular buffer
-  // visuals_.push_back(visual);
   context_->queueRender();
 }
 
