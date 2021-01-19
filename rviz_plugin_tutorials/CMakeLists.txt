@@ -88,7 +88,7 @@ pluginlib_export_plugin_description_file(rviz_common plugin_description.xml)
 ament_target_dependencies(${PROJECT_NAME}
   # sensor_msgs
 )
-ament_export_interfaces(${PROJECT_NAE} HAS_LIBRARY_TARGET)
+ament_export_targets(${PROJECT_NAE} HAS_LIBRARY_TARGET)
 
 ## END_TUTORIAL
 
